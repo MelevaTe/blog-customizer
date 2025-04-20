@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import clsx from 'clsx';
 import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
@@ -13,30 +13,21 @@ import {
 	backgroundColors,
 	contentWidthArr,
 	fontSizeOptions,
+	defaultArticleState,
+	OptionType,
 } from 'src/constants/articleProps';
 
-type Settings = {
-	fontFamily: string;
-	fontSize: string;
-	fontColor: string;
-	backgroundColor: string;
-	contentWidth: string;
-};
-
 type ArticleParamsFormProps = {
-	initialSettings: Settings;
-	defaultSettings: Settings;
-	onApply: (settings: Settings) => void;
+	onApply: (settings: typeof defaultArticleState) => void;
 };
 
-export const ArticleParamsForm = ({
-	initialSettings,
-	defaultSettings,
-	onApply,
-}: ArticleParamsFormProps) => {
+export const ArticleParamsForm = ({ onApply }: ArticleParamsFormProps) => {
 	const [isOpen, setIsOpen] = useState<boolean>(false);
 
-	const [formSettings, setFormSettings] = useState<Settings>(initialSettings);
+	const [formSettings, setFormSettings] =
+		useState<typeof defaultArticleState>(defaultArticleState);
+
+	const sidebarRef = useRef<HTMLDivElement | null>(null);
 
 	const toggleSidebar = (): void => {
 		setIsOpen((prev) => !prev);
@@ -44,8 +35,11 @@ export const ArticleParamsForm = ({
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent): void => {
-			const sidebar = document.querySelector(`.${styles.container}`);
-			if (isOpen && sidebar && !sidebar.contains(event.target as Node)) {
+			if (
+				isOpen &&
+				sidebarRef.current &&
+				!sidebarRef.current.contains(event.target as Node)
+			) {
 				setIsOpen(false);
 			}
 		};
@@ -59,7 +53,10 @@ export const ArticleParamsForm = ({
 		};
 	}, [isOpen]);
 
-	const handleFormChange = (field: keyof Settings, value: string) => {
+	const handleFormChange = (
+		field: keyof typeof defaultArticleState,
+		value: OptionType
+	) => {
 		setFormSettings((prev) => ({ ...prev, [field]: value }));
 	};
 
@@ -69,77 +66,73 @@ export const ArticleParamsForm = ({
 	};
 
 	const resetChanges = () => {
-		setFormSettings(defaultSettings);
-		onApply(defaultSettings);
+		setFormSettings(defaultArticleState);
+		onApply(defaultArticleState);
 	};
 
 	return (
 		<>
 			<ArrowButton isOpen={isOpen} onClick={toggleSidebar} />
-
 			<aside
+				ref={sidebarRef}
 				className={clsx(styles.container, {
 					[styles.container_open]: isOpen,
 				})}>
 				<form className={styles.form} onSubmit={handleSubmit}>
 					<Text as='h2' size={31} weight={800} uppercase>
-						ЗАДАЙТЕ ПАРАМЕТРЫ
+						задайте параметры
 					</Text>
 					<Select
 						title='шрифт'
 						selected={
 							fontFamilyOptions.find(
-								(option) => option.value === formSettings.fontFamily
+								(option) => option.value === formSettings.fontFamilyOption.value
 							) || fontFamilyOptions[0]
 						}
 						options={fontFamilyOptions}
-						onChange={(option) => handleFormChange('fontFamily', option.value)}
+						onChange={(option) => handleFormChange('fontFamilyOption', option)}
 					/>
 					<RadioGroup
 						name='fontSize'
 						title='размер шрифта'
 						selected={
 							fontSizeOptions.find(
-								(option) => option.value === formSettings.fontSize
+								(option) => option.value === formSettings.fontSizeOption.value
 							) || fontSizeOptions[0]
 						}
 						options={fontSizeOptions}
-						onChange={(option) => handleFormChange('fontSize', option.value)}
+						onChange={(option) => handleFormChange('fontSizeOption', option)}
 					/>
 					<Select
 						title='цвет шрифта'
 						selected={
 							fontColors.find(
-								(option) => option.value === formSettings.fontColor
+								(option) => option.value === formSettings.fontColor.value
 							) || fontColors[0]
 						}
 						options={fontColors}
-						onChange={(option) => handleFormChange('fontColor', option.value)}
+						onChange={(option) => handleFormChange('fontColor', option)}
 					/>
 					<Select
 						title='цвет фона'
 						selected={
 							backgroundColors.find(
-								(option) => option.value === formSettings.backgroundColor
+								(option) => option.value === formSettings.backgroundColor.value
 							) || backgroundColors[0]
 						}
 						options={backgroundColors}
-						onChange={(option) =>
-							handleFormChange('backgroundColor', option.value)
-						}
+						onChange={(option) => handleFormChange('backgroundColor', option)}
 					/>
 					<Separator />
 					<Select
 						title='ширина контента'
 						selected={
 							contentWidthArr.find(
-								(option) => option.value === formSettings.contentWidth
+								(option) => option.value === formSettings.contentWidth.value
 							) || contentWidthArr[0]
 						}
 						options={contentWidthArr}
-						onChange={(option) =>
-							handleFormChange('contentWidth', option.value)
-						}
+						onChange={(option) => handleFormChange('contentWidth', option)}
 					/>
 
 					<div className={styles.bottomContainer}>
