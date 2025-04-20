@@ -10,12 +10,14 @@ import styles from './Select.module.scss';
 
 type OptionProps = {
 	option: OptionType;
+	isSelected: boolean;
 	onClick: (value: OptionType['value']) => void;
 };
 
 export const Option = (props: OptionProps) => {
 	const {
 		option: { value, title, optionClassName, className },
+		isSelected,
 		onClick,
 	} = props;
 	const optionRef = useRef<HTMLLIElement>(null);
@@ -39,7 +41,9 @@ export const Option = (props: OptionProps) => {
 			onClick={handleClick(value)}
 			tabIndex={0}
 			data-testid={`select-option-${value}`}
-			ref={optionRef}>
+			ref={optionRef}
+			data-selected={isSelected}>
+			{' '}
 			<Text family={isFontFamilyClass(className) ? className : undefined}>
 				{title}
 			</Text>
